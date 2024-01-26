@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Chart Generator Platform</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+  <!-- Chart.js CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">
+
+  <!-- Custom CSS -->
+  <style>
+    /* Add your custom styles here */
+    body {
+      padding-top: 56px; /* Adjust based on your navigation height */
+    }
+
+    canvas {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#">Chart Generator</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="#">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" data-toggle="modal" data-target="#loginModal">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" data-toggle="modal" data-target="#registrationModal">Register</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="display-4">Chart Generator</h1>
+        <p class="lead">Generate pie charts or bar charts based on your data.</p>
+
+        <!-- Chart Input Form -->
+        <div id="chartForm">
+          <div class="form-group">
+            <label for="chartType">Select Chart Type:</label>
+            <select class="form-control" id="chartType">
+              <option value="pie">Pie Chart</option>
+              <option value="bar">Bar Chart</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="label">Label:</label>
+            <input type="text" class="form-control" id="label" placeholder="Enter label">
+          </div>
+
+          <div class="form-group">
+            <label for="value">Value:</label>
+            <input type="number" class="form-control" id="value" placeholder="Enter value">
+          </div>
+
+          <button class="btn btn-primary" onclick="addData()">Add More</button>
+
+          <button class="btn btn-success" onclick="generateChart()">Generate</button>
+        </div>
+
+        <!-- Chart Display -->
+        <div id="chartContainer" class="mt-5">
+          <canvas id="myChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <!-- Login form content -->
+  </div>
+
+  <!-- Registration Modal -->
+  <div class="modal fade" id="registrationModal" tabindex="-1" role="dialog" aria-labelledby="registrationModalLabel" aria-hidden="true">
+    <!-- Registration form content -->
+  </div>
+
+  <!-- Bootstrap JS and Popper.js -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom JavaScript -->
+  <script>
+    // Chart Data
+    var chartData = {
+      labels: [],
+      datasets: [{
+        data: [],
+        backgroundColor: [],
+      }],
+    };
+
+    // Chart Configuration
+    var chartConfig = {
+      type: 'pie', // Default type
+      data: chartData,
+    };
+
+    // Chart Instance
+    var myChart;
+
+    // Function to add more data
+    function addData() {
+      var label = document.getElementById('label').value;
+      var value = document.getElementById('value').value;
+
+      if (label && value) {
+        chartData.labels.push(label);
+        chartData.datasets[0].data.push(value);
+        chartData.datasets[0].backgroundColor.push(getRandomColor());
+
+        // Clear input fields
+        document.getElementById('label').value = '';
+        document.getElementById('value').value = '';
+      }
+    }
+
+    // Function to generate the chart
+    function generateChart() {
+      var chartType = document.getElementById('chartType').value;
+      if (chartType === 'bar') {
+        chartConfig.type = 'bar';
+      } else {
+        chartConfig.type = 'pie';
+      }
+
+      // Destroy existing chart if any
+      if (myChart) {
+        myChart.destroy();
+      }
+
+      // Create new chart
+      var ctx = document.getElementById('myChart').getContext('2d');
+      myChart = new Chart(ctx, chartConfig);
+    }
+
+    // Function to get random color for chart segments
+    function getRandomColor() {
+      var letters = '0123456789ABCDEF';
+      var color = '#';
+      for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+  </script>
+</body>
+</html>

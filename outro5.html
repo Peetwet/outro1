@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Audiomack Clone</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+  <!-- Custom CSS -->
+  <style>
+    /* Add your custom styles here */
+    body {
+      padding-top: 56px; /* Adjust based on your navigation height */
+    }
+
+    .music-container {
+      margin-top: 20px;
+    }
+
+    .upload-form {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#">Audiomack Clone</a>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- User Registration Form -->
+        <form id="registrationForm">
+          <h2>Register</h2>
+          <div class="form-group">
+            <label for="regUsername">Username</label>
+            <input type="text" class="form-control" id="regUsername" required>
+          </div>
+          <div class="form-group">
+            <label for="regPassword">Password</label>
+            <input type="password" class="form-control" id="regPassword" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+
+        <!-- User Login Form -->
+        <form id="loginForm" class="mt-3">
+          <h2>Login</h2>
+          <div class="form-group">
+            <label for="loginUsername">Username</label>
+            <input type="text" class="form-control" id="loginUsername" required>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" class="form-control" id="loginPassword" required>
+          </div>
+          <button type="submit" class="btn btn-success">Login</button>
+        </form>
+
+        <!-- Upload Music Form -->
+        <form id="uploadForm" class="upload-form mt-3" enctype="multipart/form-data">
+          <h2>Upload Music</h2>
+          <div class="form-group">
+            <label for="musicTitle">Title</label>
+            <input type="text" class="form-control" id="musicTitle" required>
+          </div>
+          <div class="form-group">
+            <label for="musicArtist">Artist</label>
+            <input type="text" class="form-control" id="musicArtist" required>
+          </div>
+          <div class="form-group">
+            <label for="coverArt">Cover Art URL</label>
+            <input type="text" class="form-control" id="coverArt" required>
+          </div>
+          <div class="form-group">
+            <label for="musicFile">Music File</label>
+            <input type="file" class="form-control-file" id="musicFile" name="music" accept=".mp3" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Upload Music</button>
+        </form>
+
+        <!-- Display Uploaded Music -->
+        <div class="music-container mt-5" id="musicContainer">
+          <h2>Uploaded Music</h2>
+          <ul id="musicList"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const app = express();
+const PORT = 3000;
+
+// Set up multer storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// In-memory storage (replace with a database in a real-world scenario)
+let users = [];
+let uploadedMusic = [];
+
+app.use(express.json());
+app.use(express.static('public'));
+
+// User registration
+app.post('/register', (req, res) => {
+  const { username, password } = req.body;
+  const user = { username, password };
+  users.push(user);
+  res.json({ message: 'User registered successfully' });
+});
+
+// User login
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username && u.password === password);
+  if (user) {
+    res.json({ message: 'Login successful' });
+  } else {
+    res.status(401).json({ message: 'Invalid credentials' });
+  }
+});
+
+// Middleware to check if the user is authenticated
+function isAuthenticated(req, res, next) {
+  // Replace this with a proper authentication mechanism (e.g., using JWT)
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  const token = authHeader.split(' ')[1];
+  // Validate the token (this is just a placeholder)
+  if (token !== 'your_token') {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+  next();
+}
+
+// Upload music (only accessible to authenticated users)
+app.post('/upload', isAuthenticated, upload.single('music'), (req, res) => {
+  const { originalname, filename } = req.file;
+  const music = { title: req.body.title, artist: req.body.artist, coverArt: req.body.coverArt, filename, originalname };
+  uploadedMusic.push(music);
+  res.json({ message: 'Music uploaded successfully', music });
+});
+
+// Get all uploaded music
+app.get('/music', (req, res) => {
+  res.json(uploadedMusic);
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+  </script>
+
+  <!-- Bootstrap JS and Popper.js -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.

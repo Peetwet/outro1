@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Forum</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+  <!-- Custom CSS -->
+  <style>
+    /* Add your custom styles here */
+    body {
+      padding-top: 56px; /* Adjust based on your navigation height */
+    }
+
+    .post-container {
+      margin-top: 20px;
+    }
+
+    .comment-container {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#">Forum</a>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- User Registration Form -->
+        <form id="registrationForm">
+          <h2>Register</h2>
+          <div class="form-group">
+            <label for="regUsername">Username</label>
+            <input type="text" class="form-control" id="regUsername" required>
+          </div>
+          <div class="form-group">
+            <label for="regPassword">Password</label>
+            <input type="password" class="form-control" id="regPassword" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+
+        <!-- User Login Form -->
+        <form id="loginForm" class="mt-3">
+          <h2>Login</h2>
+          <div class="form-group">
+            <label for="loginUsername">Username</label>
+            <input type="text" class="form-control" id="loginUsername" required>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" class="form-control" id="loginPassword" required>
+          </div>
+          <button type="submit" class="btn btn-success">Login</button>
+        </form>
+
+        <!-- Create a Post Form -->
+        <form id="createPostForm" class="mt-3">
+          <h2>Create a Post</h2>
+          <div class="form-group">
+            <label for="postTitle">Title</label>
+            <input type="text" class="form-control" id="postTitle" required>
+          </div>
+          <div class="form-group">
+            <label for="postContent">Content</label>
+            <textarea class="form-control" id="postContent" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Create Post</button>
+        </form>
+
+        <!-- Display Posts -->
+        <div class="post-container mt-5" id="postsContainer">
+          <h2>Posts</h2>
+          <ul id="postsList"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS and Popper.js -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  <!-- Custom JavaScript -->
+  <script>
+    // Replace 'your_backend_url' with the actual URL where your backend is hosted
+    const backendURL = 'http://localhost:3000';
+
+    // User Registration
+    document.getElementById('registrationForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const username = document.getElementById('regUsername').value;
+      const password = document.getElementById('regPassword').value;
+      await fetch(`${backendURL}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+      alert('Registration successful');
+    });
+
+    // User Login
+    document.getElementById('loginForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+      await fetch(`${backendURL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+      alert('Login successful');
+    });
+
+    // Create a Post
+    document.getElementById('createPostForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const title = document.getElementById('postTitle').value;
+      const content = document.getElementById('postContent').value;
+      await fetch(`${backendURL}/posts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, content, author: 'current_user' }),
+      });
+      alert('Post created successfully');
+      loadPosts();
+    });
+
+    // Load Posts
+    async function loadPosts() {
+      const response = await fetch(`${backendURL}/posts`);
+      const posts = await response.json();
+      const postsList = document.getElementById('postsList');
+      postsList.innerHTML = '';
+      posts.forEach(post => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <strong>${post.title}</strong>
+          <p>${post.content}</p>
+          <p>Author: ${post.author}</p>
+          <p>Comments: ${post.comments.length} | Likes: ${post.likes}</p>
+          <button class="btn btn-primary" onclick="addComment('${post.postId}')">Add Comment</button>
+          <button class="btn btn-success" onclick="likePost('${post.postId}')">Like</button>
+          <button class="btn btn-warning" onclick="editPost('${post.postId}')">Edit</button>
+        `;
+        const commentContainer = document.createElement('div');
+        commentContainer.className = 'comment-container';
+        commentContainer.innerHTML = '<h5>Comments:</h5>';
+        post.comments.forEach(comment => {
+          const commentItem = document.createElement('p');
+          commentItem.textContent = `${comment.author}: ${comment.comment}`;
+          commentContainer.appendChild(commentItem);
+        });
+        listItem.appendChild(commentContainer);
+        postsList.appendChild(listItem);
+      });
+    }
+
+    // Add Comment to a Post
+    window.addComment = async function (postId) {
+      const comment = prompt('Enter your comment:');
+      if (comment) {
+        const author = 'current_user'; // Replace with the actual logged-in user
+        await fetch(`${backendURL}/posts/${postId}/comments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ comment, author }),
+        });
+        alert('Comment added successfully');
+        loadPosts();
+      }
+    };
+
+    // Like a Post
+    window.likePost = async function (postId) {
+      await fetch(`${backendURL}/posts/${postId}/like`, {
+        method: 'POST',
+      });
+      alert('Post liked successfully');
+      loadPosts();
+    };
+
+    // Edit a Post
+    window.editPost = async function (postId) {
+      const newTitle = prompt('Enter the new title:');
+      const newContent = prompt('Enter the new content:');
+      if (newTitle && newContent) {
+        await fetch(`${backendURL}/posts/${postId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ title: newTitle, content: newContent }),
+        });
+        alert('Post edited successfully');
+        loadPosts();
+      }
+    };
+
+    // Initial load of posts
+    loadPosts();
+
+    const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+const PORT = 3000;
+
+// In-memory storage (replace with a database in a real-world scenario)
+let users = [];
+let posts = [];
+
+app.use(bodyParser.json());
+
+// User registration
+app.post('/register', (req, res) => {
+  const { username, password } = req.body;
+  const user = { username, password };
+  users.push(user);
+  res.json({ message: 'User registered successfully' });
+});
+
+// User login
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username && u.password === password);
+  if (user) {
+    res.json({ message: 'Login successful' });
+  } else {
+    res.status(401).json({ message: 'Invalid credentials' });
+  }
+});
+
+// Create a post
+app.post('/posts', (req, res) => {
+  const { title, content, author } = req.body;
+  const post = { title, content, author, comments: [], likes: 0 };
+  posts.push(post);
+  res.json({ message: 'Post created successfully', post });
+});
+
+// Get all posts
+app.get('/posts', (req, res) => {
+  res.json(posts);
+});
+
+// Add a comment to a post
+app.post('/posts/:postId/comments', (req, res) => {
+  const { postId } = req.params;
+  const { comment, author } = req.body;
+  const post = posts.find(p => p.postId === postId);
+  if (post) {
+    post.comments.push({ comment, author });
+    res.json({ message: 'Comment added successfully', post });
+  } else {
+    res.status(404).json({ message: 'Post not found' });
+  }
+});
+
+// Like a post
+app.post('/posts/:postId/like', (req, res) => {
+  const { postId } = req.params;
+  const post = posts.find(p => p.postId === postId);
+  if (post) {
+    post.likes++;
+    res.json({ message: 'Post liked successfully', post });
+  } else {
+    res.status(404).json({ message: 'Post not found' });
+  }
+});
+
+// Edit or modify a post
+app.put('/posts/:postId', (req, res) => {
+  const { postId } = req.params;
+  const { title, content } = req.body;
+  const post = posts.find(p => p.postId === postId);
+  if (post) {
+    post.title = title;
+    post.content = content;
+    res.json({ message: 'Post edited successfully', post });
+  } else {
+    res.status(404).json({ message: 'Post not found' });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+  </script>
+</body>
+</html>

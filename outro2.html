@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Your Product Page</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+  <!-- Custom CSS -->
+  <style>
+    /* Add your custom styles here */
+    body {
+      padding-top: 56px; /* Adjust based on your navigation height */
+    }
+
+    .product-image {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#">Your Product Page</a>
+  </nav>
+
+  <!-- Product Section -->
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-lg-6">
+        <img src="https://via.placeholder.com/400" alt="https://kakivacosmetics.com/product/kakiva-leave-in-conditioner/" class="https://kakivacosmetics.com/product/kakiva-leave-in-conditioner/">
+      </div>
+      <div class="col-lg-6">
+        <h2>Kakiva Leave-In Conditioner 250ml</h2>
+        <p class="lead">Price: $20.00</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam aliquam, velit at cursus fringilla, quam nisl gravida ipsum, a scelerisque libero mauris id mauris.</p>
+        <button class="btn btn-primary" id="buyButton">Buy Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paystack Checkout Modal -->
+  <div class="modal fade" id="paystackModal" tabindex="-1" role="dialog" aria-labelledby="paystackModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="paystackModalLabel">Paystack Checkout</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="paystack-form"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS and Popper.js -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  <!-- Paystack JS -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+
+  <!-- Custom JavaScript -->
+  <script>
+    // Replace 'your_public_key' with your actual Paystack public key
+    const publicKey = 'your_public_key';
+
+    // Event listener for Buy button
+    document.getElementById('buyButton').addEventListener('click', function() {
+      // Replace with actual product details and amount
+      const productDetails = {
+        name: 'Kakiva Leave-In Conditioner 250ml',
+        amount: 2000000, // Amount in kobo (e.g., 2000 for $20.00)
+        email: 'customer@example.com',
+      };
+
+      // Initialize Paystack
+      const handler = PaystackPop.setup({
+        key: publicKey,
+        email: productDetails.email,
+        amount: productDetails.amount,
+        ref: 'your_unique_transaction_reference',
+        onClose: function() {
+          console.log('Payment closed.');
+        },
+        callback: function(response) {
+          // Handle successful payment, e.g., send email to user
+          sendEmail(response, productDetails);
+        },
+      });
+
+      // Open Paystack checkout modal
+      handler.openIframe();
+    });
+
+    // Function to send email after successful payment
+    function sendEmail(response, productDetails) {
+      // Replace with your email sending logic
+      console.log('Email sent to customer after successful payment.');
+    }
+  </script>
+</body>
+</html>
